@@ -1,0 +1,34 @@
+name: Build and Deploy
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    if: ${{ github.event.pull_request.merged }}
+    concurrency: ci-${{ github.ref }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+
+      - name: Create .env 🔑
+        run: echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}" > .env
+        working-directory: client
+
+      - name: Install and Build 🔧
+        run: |
+          npm ci
+          npm run build
+        working-directory: client
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: client/dist
