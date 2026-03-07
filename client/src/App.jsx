@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from
 
 import Channels from "./pages/Channels";
 import Home from "./pages/Home";
+import Landing from "./pages/Landing";
 import Onboarding from "./pages/Onboarding";
 import P2P from "./pages/P2P";
 import Receive from "./pages/Receive";
@@ -48,22 +49,28 @@ function ProtectedRoute({ children }) {
   return isInitialized ? children : <Navigate to="/onboarding" replace />;
 }
 
+function WalletShell({ children }) {
+  return (
+    <div className="max-w-md mx-auto min-h-screen bg-neutral-900 relative">
+      {children}
+      <BottomNav />
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="max-w-md mx-auto min-h-screen bg-neutral-900 relative">
-        <Routes>
-          <Route path="/" element={<Navigate to="/onboarding" replace />} />
-          <Route path="/onboarding" element={<Onboarding />} />
-          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-          <Route path="/receive" element={<ProtectedRoute><Receive /></ProtectedRoute>} />
-          <Route path="/send" element={<ProtectedRoute><Send /></ProtectedRoute>} />
-          <Route path="/channels" element={<ProtectedRoute><Channels /></ProtectedRoute>} />
-          <Route path="/p2p" element={<ProtectedRoute><P2P /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-        </Routes>
-        <BottomNav />
-      </div>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/onboarding" element={<WalletShell><Onboarding /></WalletShell>} />
+        <Route path="/home" element={<WalletShell><ProtectedRoute><Home /></ProtectedRoute></WalletShell>} />
+        <Route path="/receive" element={<WalletShell><ProtectedRoute><Receive /></ProtectedRoute></WalletShell>} />
+        <Route path="/send" element={<WalletShell><ProtectedRoute><Send /></ProtectedRoute></WalletShell>} />
+        <Route path="/channels" element={<WalletShell><ProtectedRoute><Channels /></ProtectedRoute></WalletShell>} />
+        <Route path="/p2p" element={<WalletShell><ProtectedRoute><P2P /></ProtectedRoute></WalletShell>} />
+        <Route path="/settings" element={<WalletShell><ProtectedRoute><Settings /></ProtectedRoute></WalletShell>} />
+      </Routes>
     </BrowserRouter>
   );
 }
