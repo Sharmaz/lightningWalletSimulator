@@ -3,9 +3,9 @@ import "@testing-library/jest-dom";
 
 import App from "../src/App";
 
-test("renders onboarding screen on initial load", () => {
+test("renders landing page on initial load", () => {
   render(<App />);
 
-  expect(screen.getByText("Lightning Wallet")).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: /crear mi wallet/i })).toBeInTheDocument();
+  expect(screen.getByText("Lightning Sim")).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /probar el simulador/i })).toBeInTheDocument();
 });
