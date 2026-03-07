@@ -1,13 +1,9 @@
 module.exports = {
-  testEnvironment: 'node',
+  verbose: true,
+  testEnvironment: "node",
   collectCoverage: true,
-  coverageDirectory: 'coverage',
-  testMatch: [],
-  transformIgnorePatterns: [
-    '[/\\\\\\\\]node_modules[/\\\\\\\\].+\\\\.(js|ts)$'
-  ],
-  transform: {},
-  coveragePathIgnorePatterns: [
-    "/node_modules/"
-  ]
+  coverageDirectory: "coverage",
+  collectCoverageFrom: ["src/**/*.js"],
+  testMatch: ["**/__tests__/**/*.test.js", "**/*.test.js"],
+  testPathIgnorePatterns: ["/node_modules/", "/coverage/"],
 };
