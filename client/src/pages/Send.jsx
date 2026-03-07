@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 
 import { Html5Qrcode } from "html5-qrcode";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { decodeInvoice, isExpired } from "../lib/invoice";
 import socket from "../lib/socket";
@@ -10,9 +10,15 @@ import useWalletStore from "../store/useWalletStore";
 export default function Send() {
   const { payInvoice } = useWalletStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [input, setInput] = useState("");
-  const [parsed, setParsed] = useState(null);
+  const prefilled = location.state?.bolt11 || "";
+  const [input, setInput] = useState(prefilled);
+  const [parsed, setParsed] = useState(() => {
+    if (!prefilled) return null;
+    const inv = decodeInvoice(prefilled);
+    return inv && !isExpired(inv) ? inv : null;
+  });
   const [error, setError] = useState("");
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);

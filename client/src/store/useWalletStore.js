@@ -5,6 +5,11 @@ import { create } from "zustand";
 import { encodeInvoice, decodeInvoice, isExpired } from "../lib/invoice";
 import socket from "../lib/socket";
 
+export const BOT_NODE_ID = "node_00000bot";
+
+const BOT_AMOUNTS = [500, 1000, 2000, 3000, 5000];
+const BOT_DESCRIPTIONS = ["Café", "Tacos", "Pizza", "Cerveza", "Libro"];
+
 function deriveNodeId(seedPhrase) {
   const str = seedPhrase.join("");
   let hash = 0;
@@ -26,6 +31,9 @@ const useWalletStore = create((set, get) => ({
   transactions: [],
 
   isInitialized: false,
+
+  soloMode: false,
+  botInvoice: null,
 
   p2pMode: false,
   roomCode: null,
@@ -93,14 +101,15 @@ const useWalletStore = create((set, get) => ({
   },
 
   createInvoice({ amount, description }) {
-    const { nodeId } = get();
+    const { nodeId, soloMode } = get();
     const invoice = encodeInvoice({ amount, description, payeeNodeId: nodeId });
     set((s) => ({ invoices: [invoice, ...s.invoices] }));
+    if (soloMode) get()._botPayUserInvoice(invoice);
     return invoice;
   },
 
   payInvoice(bolt11) {
-    const { nodeId, channels } = get();
+    const { nodeId, channels, soloMode } = get();
     const invoice = decodeInvoice(bolt11);
     if (!invoice) return { error: "Invoice inválido" };
     if (isExpired(invoice)) return { error: "Invoice expirado" };
@@ -133,6 +142,10 @@ const useWalletStore = create((set, get) => ({
         ...s.transactions,
       ],
     }));
+
+    if (soloMode && invoice.payeeNodeId === BOT_NODE_ID) {
+      setTimeout(() => get()._generateBotInvoice(), 1500);
+    }
 
     return { success: true, invoice, channelId: channel.id };
   },
@@ -175,6 +188,48 @@ const useWalletStore = create((set, get) => ({
 
   syncState(remoteState) {
     set((s) => ({ ...s, ...remoteState }));
+  },
+
+  initSoloMode() {
+    set((s) => ({
+      soloMode: true,
+      onChainBalance: s.onChainBalance + 100_000 - 50_000,
+      lightningBalance: s.lightningBalance + 50_000,
+      channels: [...s.channels, {
+        id: uuidv4(),
+        peerNodeId: BOT_NODE_ID,
+        capacity: 100_000,
+        localBalance: 50_000,
+        remoteBalance: 50_000,
+        status: "open",
+      }],
+      transactions: [{
+        id: uuidv4(),
+        type: "channel_open",
+        amount: 50_000,
+        timestamp: Date.now(),
+        description: "Canal abierto con nodo bot",
+      }, ...s.transactions],
+    }));
+    get()._generateBotInvoice();
+  },
+
+  _generateBotInvoice() {
+    const amount = BOT_AMOUNTS[Math.floor(Math.random() * BOT_AMOUNTS.length)];
+    const description = BOT_DESCRIPTIONS[Math.floor(Math.random() * BOT_DESCRIPTIONS.length)];
+    const invoice = encodeInvoice({ amount, description, payeeNodeId: BOT_NODE_ID });
+    set({ botInvoice: invoice });
+  },
+
+  _botPayUserInvoice(invoice) {
+    setTimeout(() => {
+      if (!get().soloMode) return;
+      get().receivePayment({
+        amount: invoice.amount,
+        invoiceId: invoice.id,
+        description: `Bot pagó: ${invoice.description || "tu invoice"}`,
+      });
+    }, 3000);
   },
 
   initP2P() {
@@ -285,6 +340,8 @@ const useWalletStore = create((set, get) => ({
       invoices: [],
       transactions: [],
       isInitialized: false,
+      soloMode: false,
+      botInvoice: null,
       p2pMode: false,
       roomCode: null,
       peerId: null,

@@ -50,20 +50,49 @@ describe("Onboarding", () => {
     expect(words.length + 1).toBe(12);
   });
 
-  it("navigates to /home after confirming the seed", () => {
+  it("shows mode selection after clicking entendido", () => {
     renderOnboarding();
     fireEvent.click(screen.getByRole("button", { name: /crear mi wallet/i }));
     fireEvent.click(screen.getByRole("button", { name: /entendido/i }));
+
+    expect(screen.getByText("Elige tu modo")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /solo mode/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /modo p2p/i })).toBeInTheDocument();
+  });
+
+  it("navigates to /home after selecting Solo Mode", () => {
+    renderOnboarding();
+    fireEvent.click(screen.getByRole("button", { name: /crear mi wallet/i }));
+    fireEvent.click(screen.getByRole("button", { name: /entendido/i }));
+    fireEvent.click(screen.getByRole("button", { name: /solo mode/i }));
 
     expect(mockNavigate).toHaveBeenCalledWith("/home");
   });
 
-  it("initializes the wallet in the store after confirmation", () => {
+  it("navigates to /p2p after selecting Modo P2P", () => {
     renderOnboarding();
     fireEvent.click(screen.getByRole("button", { name: /crear mi wallet/i }));
     fireEvent.click(screen.getByRole("button", { name: /entendido/i }));
+    fireEvent.click(screen.getByRole("button", { name: /modo p2p/i }));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/p2p");
+  });
+
+  it("initializes the wallet in the store after creating it", () => {
+    renderOnboarding();
+    fireEvent.click(screen.getByRole("button", { name: /crear mi wallet/i }));
 
     expect(useWalletStore.getState().isInitialized).toBe(true);
-    expect(useWalletStore.getState().onChainBalance).toBe(200_000);
+  });
+
+  it("sets up solo mode state after selecting Solo Mode", () => {
+    renderOnboarding();
+    fireEvent.click(screen.getByRole("button", { name: /crear mi wallet/i }));
+    fireEvent.click(screen.getByRole("button", { name: /entendido/i }));
+    fireEvent.click(screen.getByRole("button", { name: /solo mode/i }));
+
+    expect(useWalletStore.getState().soloMode).toBe(true);
+    expect(useWalletStore.getState().lightningBalance).toBe(50_000);
+    expect(useWalletStore.getState().channels).toHaveLength(1);
   });
 });
