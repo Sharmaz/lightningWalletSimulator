@@ -234,5 +234,12 @@ export default defineConfig([
     },
   },
 
+  {
+    files: ["__mocks__/**/*.js", "jest.setup.js"],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.jest },
+    },
+  },
+
   globalIgnores(["**/coverage/**", "**/dist/**", "**/node_modules/**"]),
 ]);
