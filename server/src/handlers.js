@@ -102,7 +102,10 @@ function registerHandlers(io) {
         return;
       }
 
-      const [, amountStr, , payeeNodeId, invoiceId, , expiresAt] = parts;
+      const expiresAt = parts[parts.length - 1];
+      const invoiceId = parts[parts.length - 3];
+      const payeeNodeId = parts.slice(3, parts.length - 3).join("_");
+      const amountStr = parts[1];
       const amount = Number(amountStr);
 
       if (Date.now() > Number(expiresAt)) {
