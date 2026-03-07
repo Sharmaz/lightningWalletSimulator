@@ -14,6 +14,9 @@ export default function Receive() {
   function handleGenerate() {
     if (!amount || Number(amount) <= 0) return;
     const inv = createInvoice({ amount: Number(amount), description });
+    if (useWalletStore.getState().p2pMode) {
+      useWalletStore.getState().registerInvoiceP2P(inv);
+    }
     setInvoice(inv);
   }
 

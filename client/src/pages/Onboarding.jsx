@@ -6,7 +6,7 @@ import useWalletStore from "../store/useWalletStore";
 
 export default function Onboarding() {
   const { generateWallet, seedPhrase, addOnChainBalance } = useWalletStore();
-  const [step, setStep] = useState("start"); // 'start' | 'seed' | 'confirm'
+  const [step, setStep] = useState("start");
   const navigate = useNavigate();
 
   function handleGenerate() {
@@ -15,7 +15,6 @@ export default function Onboarding() {
   }
 
   function handleContinue() {
-    // Faucet inicial: 200,000 sats simulados
     addOnChainBalance(200_000);
     navigate("/home");
   }

@@ -3,8 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 
 import { encodeInvoice, decodeInvoice, isExpired } from "../lib/invoice";
+import socket from "../lib/socket";
 
-// Deriva un nodeId simulado del seed (no criptografía real)
 function deriveNodeId(seedPhrase) {
   const str = seedPhrase.join("");
   let hash = 0;
@@ -15,23 +15,22 @@ function deriveNodeId(seedPhrase) {
 }
 
 const useWalletStore = create((set, get) => ({
-  // Identidad
   seedPhrase: [],
   nodeId: null,
 
-  // Balances
   onChainBalance: 0,
   lightningBalance: 0,
 
-  // Canales e historial
   channels: [],
   invoices: [],
   transactions: [],
 
-  // UI state
   isInitialized: false,
 
-  // --- Acciones ---
+  p2pMode: false,
+  roomCode: null,
+  peerId: null,
+  peerNodeId: null,
 
   generateWallet() {
     const mnemonic = bip39.generateMnemonic();
@@ -44,7 +43,6 @@ const useWalletStore = create((set, get) => ({
     set((s) => ({ onChainBalance: s.onChainBalance + amount }));
   },
 
-  // Abre un canal moviendo sats de on-chain a Lightning
   openChannel({ peerNodeId, capacity }) {
     const { onChainBalance } = get();
     if (onChainBalance < capacity) return { error: "Saldo on-chain insuficiente" };
@@ -74,7 +72,6 @@ const useWalletStore = create((set, get) => ({
       ],
     }));
 
-    // Simula la apertura del canal tras 1s
     setTimeout(() => {
       set((s) => ({
         channels: s.channels.map((c) => (c.id === channel.id ? { ...c, status: "open" } : c),
@@ -85,14 +82,12 @@ const useWalletStore = create((set, get) => ({
     return { channel };
   },
 
-  // Actualiza un canal existente (usado por Socket.io en P2P)
   updateChannel(channelId, updates) {
     set((s) => ({
       channels: s.channels.map((c) => (c.id === channelId ? { ...c, ...updates } : c)),
     }));
   },
 
-  // Agrega un canal externo (recibido del server en P2P)
   addChannel(channel) {
     set((s) => ({ channels: [...s.channels, channel] }));
   },
@@ -104,7 +99,6 @@ const useWalletStore = create((set, get) => ({
     return invoice;
   },
 
-  // Pago saliente (Solo Mode o validado localmente)
   payInvoice(bolt11) {
     const { nodeId, channels } = get();
     const invoice = decodeInvoice(bolt11);
@@ -112,13 +106,11 @@ const useWalletStore = create((set, get) => ({
     if (isExpired(invoice)) return { error: "Invoice expirado" };
     if (invoice.payeeNodeId === nodeId) return { error: "No puedes pagarte a ti mismo" };
 
-    // Busca canal con suficiente liquidez outbound
     const channel = channels.find(
       (c) => c.status === "open" && c.localBalance >= invoice.amount,
     );
     if (!channel) return { error: "Sin liquidez suficiente en ningún canal" };
 
-    // Actualiza canal y balances
     set((s) => ({
       lightningBalance: s.lightningBalance - invoice.amount,
       channels: s.channels.map((c) => (c.id === channel.id
@@ -145,14 +137,11 @@ const useWalletStore = create((set, get) => ({
     return { success: true, invoice, channelId: channel.id };
   },
 
-  // Pago entrante
   receivePayment({ amount, invoiceId, description }) {
     set((s) => {
-      // Marca el invoice como pagado
       const invoices = s.invoices.map((inv) => (inv.id === invoiceId ? { ...inv, status: "paid" } : inv),
       );
 
-      // Actualiza el canal con más liquidez remota → local
       const channel = s.channels.find((c) => c.status === "open" && c.remoteBalance >= amount);
       const channels = channel
         ? s.channels.map((c) => (c.id === channel.id
@@ -184,9 +173,106 @@ const useWalletStore = create((set, get) => ({
     });
   },
 
-  // Sync completo desde el server (reconexión P2P)
   syncState(remoteState) {
     set((s) => ({ ...s, ...remoteState }));
+  },
+
+  initP2P() {
+    socket.off("room_created").on("room_created", ({ roomCode }) => {
+      set({ roomCode });
+    });
+
+    socket.off("peer_connected").on("peer_connected", ({ peerId, peerNodeId }) => {
+      set({ peerId, peerNodeId });
+    });
+
+    socket.off("room_joined").on("room_joined", ({ roomCode, peerId, peerNodeId }) => {
+      set({ roomCode, peerId, peerNodeId });
+    });
+
+    socket.off("peer_disconnected").on("peer_disconnected", () => {
+      set({ peerId: null, peerNodeId: null });
+    });
+
+    socket.off("channel_opened").on("channel_opened", ({ channel }) => {
+      set((s) => ({
+        channels: [...s.channels, { ...channel, status: "open" }],
+        lightningBalance: s.lightningBalance + channel.localBalance,
+        transactions: channel.localBalance > 0
+          ? [{
+              id: uuidv4(),
+              type: "channel_open",
+              amount: channel.localBalance,
+              timestamp: Date.now(),
+              description: `Canal P2P con ${channel.peerNodeId}`,
+            }, ...s.transactions]
+          : s.transactions,
+      }));
+    });
+
+    socket.off("payment_received").on("payment_received", ({ amount, invoiceId }) => {
+      get().receivePayment({ amount, invoiceId, description: "Pago recibido (P2P)" });
+    });
+
+    if (!socket.connected) socket.connect();
+  },
+
+  createRoom() {
+    const { nodeId } = get();
+    get().initP2P();
+    set({ p2pMode: true });
+    socket.emit("create_room", { nodeId });
+  },
+
+  joinRoom(roomCode) {
+    const { nodeId } = get();
+    get().initP2P();
+    set({ p2pMode: true });
+    socket.emit("join_room", { roomCode, nodeId });
+  },
+
+  openChannelP2P(capacity) {
+    set((s) => ({ onChainBalance: s.onChainBalance - capacity }));
+    socket.emit("open_channel", { capacity });
+  },
+
+  registerInvoiceP2P(invoice) {
+    socket.emit("register_invoice", { invoice });
+  },
+
+  confirmP2PPayment({ amount, description, invoiceId, peerNodeId }) {
+    set((s) => {
+      const channel = s.channels.find(
+        (c) => c.status === "open" && c.peerNodeId === peerNodeId,
+      );
+      return {
+        lightningBalance: s.lightningBalance - amount,
+        channels: channel
+          ? s.channels.map((c) => (c.id === channel.id
+            ? { ...c, localBalance: c.localBalance - amount, remoteBalance: c.remoteBalance + amount }
+            : c))
+          : s.channels,
+        transactions: [{
+          id: uuidv4(),
+          type: "send",
+          amount,
+          timestamp: Date.now(),
+          description: description || "Pago P2P enviado",
+          invoiceId,
+        }, ...s.transactions],
+      };
+    });
+  },
+
+  leaveP2P() {
+    socket.off("room_created");
+    socket.off("peer_connected");
+    socket.off("room_joined");
+    socket.off("peer_disconnected");
+    socket.off("channel_opened");
+    socket.off("payment_received");
+    socket.disconnect();
+    set({ p2pMode: false, roomCode: null, peerId: null, peerNodeId: null });
   },
 
   reset() {
@@ -199,6 +285,10 @@ const useWalletStore = create((set, get) => ({
       invoices: [],
       transactions: [],
       isInitialized: false,
+      p2pMode: false,
+      roomCode: null,
+      peerId: null,
+      peerNodeId: null,
     });
   },
 }));

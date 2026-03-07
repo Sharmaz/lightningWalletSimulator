@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 import useWalletStore from "../store/useWalletStore";
 
 function statusLabel(status) {
@@ -12,7 +14,8 @@ function statusColor(status) {
 }
 
 export default function Channels() {
-  const { channels, onChainBalance } = useWalletStore();
+  const { channels, onChainBalance, p2pMode } = useWalletStore();
+  const navigate = useNavigate();
   const openChannels = channels.filter((c) => c.status !== "closed");
 
   return (
@@ -21,6 +24,17 @@ export default function Channels() {
       <p className="text-neutral-400 text-sm mb-6">
         On-chain disponible: <span className="text-white">{onChainBalance.toLocaleString()} sats</span>
       </p>
+
+      <button
+        onClick={() => navigate("/p2p")}
+        className={`w-full font-bold py-3 rounded-xl mb-6 transition-colors ${
+          p2pMode
+            ? "bg-green-700 text-green-200"
+            : "bg-neutral-700 text-white hover:bg-neutral-600"
+        }`}
+      >
+        {p2pMode ? "⚡ P2P activo" : "Conectar en modo P2P"}
+      </button>
 
       {openChannels.length === 0 ? (
         <div className="text-center py-16">

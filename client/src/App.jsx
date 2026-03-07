@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from
 import Channels from "./pages/Channels";
 import Home from "./pages/Home";
 import Onboarding from "./pages/Onboarding";
+import P2P from "./pages/P2P";
 import Receive from "./pages/Receive";
 import Send from "./pages/Send";
 import Settings from "./pages/Settings";
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/receive" element={<ProtectedRoute><Receive /></ProtectedRoute>} />
           <Route path="/send" element={<ProtectedRoute><Send /></ProtectedRoute>} />
           <Route path="/channels" element={<ProtectedRoute><Channels /></ProtectedRoute>} />
+          <Route path="/p2p" element={<ProtectedRoute><P2P /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         </Routes>
         <BottomNav />

@@ -4,6 +4,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { useNavigate } from "react-router-dom";
 
 import { decodeInvoice, isExpired } from "../lib/invoice";
+import socket from "../lib/socket";
 import useWalletStore from "../store/useWalletStore";
 
 export default function Send() {
@@ -33,6 +34,25 @@ export default function Send() {
   }
 
   function handlePay() {
+    const { p2pMode, confirmP2PPayment } = useWalletStore.getState();
+
+    if (p2pMode) {
+      socket.emit("pay_invoice", { bolt11: parsed.bolt11 });
+      socket.once("payment_complete", ({ amount, invoiceId }) => {
+        confirmP2PPayment({
+          amount,
+          invoiceId,
+          description: parsed.description,
+          peerNodeId: parsed.payeeNodeId,
+        });
+        setResult({ success: true });
+      });
+      socket.once("payment_failed", ({ reason }) => {
+        setError(reason);
+      });
+      return;
+    }
+
     const res = payInvoice(parsed.bolt11);
     if (res.error) return setError(res.error);
     setResult(res);
@@ -41,7 +61,7 @@ export default function Send() {
   async function startScanner() {
     setScanning(true);
     setError("");
-    // Esperar a que el div esté montado
+
     await new Promise((r) => setTimeout(r, 100));
     try {
       const scanner = new Html5Qrcode("qr-reader");
