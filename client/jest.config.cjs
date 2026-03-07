@@ -10,6 +10,7 @@ const config = {
   testMatch: ["**/__tests__/**/?(*.)+(spec|test).[j]s?(x)"],
   moduleNameMapper: {
     "^uuid$": "<rootDir>/__mocks__/uuid.js",
+    "^.+/lib/socket(\\.js)?$": "<rootDir>/__mocks__/socket.js",
   },
 };
 
