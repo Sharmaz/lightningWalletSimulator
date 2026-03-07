@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 
 const INVOICE_PREFIX = "lnsim1";
-const DEFAULT_EXPIRY = 3600; // 1 hora en segundos
+const DEFAULT_EXPIRY = 3600;
 
 export function encodeInvoice({ amount, description, payeeNodeId }) {
   const id = uuidv4();
@@ -15,8 +15,16 @@ export function encodeInvoice({ amount, description, payeeNodeId }) {
 export function decodeInvoice(bolt11) {
   if (!bolt11.startsWith(`${INVOICE_PREFIX}_`)) return null;
   const parts = bolt11.split("_");
+
   if (parts.length < 7) return null;
-  const [, amount, descB64, payeeNodeId, id, timestamp, expiresAt] = parts;
+
+  const expiresAt = parts[parts.length - 1];
+  const timestamp = parts[parts.length - 2];
+  const id = parts[parts.length - 3];
+  const payeeNodeId = parts.slice(3, parts.length - 3).join("_");
+  const amount = parts[1];
+  const descB64 = parts[2];
+
   let description = "";
   try {
     description = decodeURIComponent(atob(descB64));
