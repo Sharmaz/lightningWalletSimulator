@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+  deploy-client:
     if: ${{ github.event.pull_request.merged }}
     concurrency: ci-${{ github.ref }}
     runs-on: ubuntu-latest
@@ -32,3 +32,33 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: client/dist
+
+  deploy-server:
+    if: ${{ github.event.pull_request.merged }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            if [ ! -d "${{ secrets.VPS_PROJECT_PATH }}" ]; then
+              git clone git@github.com:Sharmaz/lightningWalletSimulator.git ${{ secrets.VPS_PROJECT_PATH }}
+            fi
+
+            cd ${{ secrets.VPS_PROJECT_PATH }}/server
+
+            git -C ${{ secrets.VPS_PROJECT_PATH }} pull origin main
+
+            if [ ! -f ".env" ]; then
+              echo "PORT=3001" > .env
+            fi
+
+            npm install --omit=dev
+
+            pm2 delete lightning-sim 2>/dev/null || true
+            pm2 start npm --name "lightning-sim" -- start
+            pm2 save
