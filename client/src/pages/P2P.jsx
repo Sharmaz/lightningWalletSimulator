@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { QRCodeSVG } from "qrcode.react";
 import { useNavigate } from "react-router-dom";
@@ -18,10 +18,20 @@ export default function P2P() {
   const [capacity, setCapacity] = useState("");
   const [openingChannel, setOpeningChannel] = useState(false);
   const [joinError, setJoinError] = useState("");
+  const [peerDisconnectedMsg, setPeerDisconnectedMsg] = useState("");
+  const prevPeerIdRef = useRef(peerId);
 
   const p2pChannel = channels.find(
     (c) => c.peerNodeId === peerNodeId && c.status === "open",
   );
+
+  useEffect(() => {
+    const prev = prevPeerIdRef.current;
+    prevPeerIdRef.current = peerId;
+    if (prev && !peerId && !p2pChannel) {
+      setPeerDisconnectedMsg("El peer se desconectó. Puedes esperar a que vuelva o crear una nueva room.");
+    }
+  }, [peerId, p2pChannel]);
 
   let step;
   if (p2pChannel) step = "ready";
@@ -164,6 +174,11 @@ export default function P2P() {
             <h2 className="text-white font-bold text-xl mb-2">Conectando...</h2>
             <p className="text-neutral-400 text-sm">Uniéndose a la room</p>
           </>
+        )}
+        {peerDisconnectedMsg && (
+          <div className="bg-red-900/40 border border-red-600/40 rounded-xl px-4 py-3 mt-4 text-red-300 text-sm">
+            {peerDisconnectedMsg}
+          </div>
         )}
         <button onClick={handleLeave} className="text-neutral-500 text-sm py-2 mt-4">
           Cancelar

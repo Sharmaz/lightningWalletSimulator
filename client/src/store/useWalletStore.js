@@ -111,14 +111,14 @@ const useWalletStore = create((set, get) => ({
   payInvoice(bolt11) {
     const { nodeId, channels, soloMode } = get();
     const invoice = decodeInvoice(bolt11);
-    if (!invoice) return { error: "Invoice inválido" };
-    if (isExpired(invoice)) return { error: "Invoice expirado" };
-    if (invoice.payeeNodeId === nodeId) return { error: "No puedes pagarte a ti mismo" };
+    if (!invoice) return { error: "Invoice inválido. Verifica que sea un invoice generado por este simulador." };
+    if (isExpired(invoice)) return { error: "Este invoice ya expiró. Los invoices Lightning tienen una ventana de tiempo limitada — pide uno nuevo al destinatario." };
+    if (invoice.payeeNodeId === nodeId) return { error: "No puedes pagarte a ti mismo. Genera el invoice desde otra wallet." };
 
     const channel = channels.find(
       (c) => c.status === "open" && c.localBalance >= invoice.amount,
     );
-    if (!channel) return { error: "Sin liquidez suficiente en ningún canal" };
+    if (!channel) return { error: `Sin liquidez suficiente. Necesitas al menos ${invoice.amount.toLocaleString()} sats de saldo de salida (outbound) en un canal abierto.` };
 
     set((s) => ({
       lightningBalance: s.lightningBalance - invoice.amount,

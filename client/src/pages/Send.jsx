@@ -22,12 +22,15 @@ export default function Send() {
   const [error, setError] = useState("");
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
+  const cameraAvailable = typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
   const scannerRef = useRef(null);
   const scannerInstanceRef = useRef(null);
 
   useEffect(() => () => {
-    if (scannerInstanceRef.current) {
-      scannerInstanceRef.current.stop().catch(() => {});
+    try {
+      scannerInstanceRef.current?.stop().catch(() => {});
+    } catch {
+      // scanner was not running
     }
   }, []);
 
@@ -76,7 +79,7 @@ export default function Send() {
         { facingMode: "environment" },
         { fps: 10, qrbox: 250 },
         (decodedText) => {
-          scanner.stop().catch(() => {});
+          try { scanner.stop().catch(() => {}); } catch { /* noop */ }
           setScanning(false);
           setInput(decodedText);
           const inv = decodeInvoice(decodedText);
@@ -116,12 +119,12 @@ export default function Send() {
       <h2 className="text-white font-bold text-lg mb-1">Enviar pago</h2>
       <p className="text-neutral-400 text-sm mb-6">Escanea un QR o pega el invoice</p>
 
-      {scanning ? (
+      {cameraAvailable && (scanning ? (
         <div className="mb-4">
           <div id="qr-reader" ref={scannerRef} className="rounded-xl overflow-hidden" />
           <button
             onClick={() => {
-              scannerInstanceRef.current?.stop().catch(() => {});
+              try { scannerInstanceRef.current?.stop().catch(() => {}); } catch { /* noop */ }
               setScanning(false);
             }}
             className="w-full mt-3 text-neutral-400 text-sm py-2"
@@ -136,12 +139,14 @@ export default function Send() {
         >
           📷 Escanear QR
         </button>
-      )}
+      ))}
 
-      <div className="relative mb-4">
-        <div className="absolute inset-x-0 top-1/2 border-t border-neutral-700" />
-        <span className="relative bg-neutral-900 px-3 text-neutral-500 text-xs mx-auto block w-fit">o pega el invoice</span>
-      </div>
+      {cameraAvailable && !scanning && (
+        <div className="relative mb-4">
+          <div className="absolute inset-x-0 top-1/2 border-t border-neutral-700" />
+          <span className="relative bg-neutral-900 px-3 text-neutral-500 text-xs mx-auto block w-fit">o pega el invoice</span>
+        </div>
+      )}
 
       <textarea
         value={input}

@@ -1,3 +1,5 @@
+import { Component } from "react";
+
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import Channels from "./pages/Channels";
@@ -44,6 +46,33 @@ function BottomNav() {
   );
 }
 
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { error: error.message || String(error) };
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="min-h-screen bg-neutral-900 flex flex-col items-center justify-center p-6 text-center">
+          <p className="text-red-400 font-bold mb-2">Error</p>
+          <p className="text-neutral-400 text-sm font-mono break-all">{this.state.error}</p>
+          <button
+            className="mt-6 bg-yellow-400 text-neutral-900 font-bold py-2 px-6 rounded-xl"
+            onClick={() => { this.setState({ error: null }); window.location.href = "/home"; }}
+          >
+            Reintentar
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function ProtectedRoute({ children }) {
   const isInitialized = useWalletStore((s) => s.isInitialized);
   return isInitialized ? children : <Navigate to="/onboarding" replace />;
@@ -61,16 +90,18 @@ function WalletShell({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/onboarding" element={<WalletShell><Onboarding /></WalletShell>} />
-        <Route path="/home" element={<WalletShell><ProtectedRoute><Home /></ProtectedRoute></WalletShell>} />
-        <Route path="/receive" element={<WalletShell><ProtectedRoute><Receive /></ProtectedRoute></WalletShell>} />
-        <Route path="/send" element={<WalletShell><ProtectedRoute><Send /></ProtectedRoute></WalletShell>} />
-        <Route path="/channels" element={<WalletShell><ProtectedRoute><Channels /></ProtectedRoute></WalletShell>} />
-        <Route path="/p2p" element={<WalletShell><ProtectedRoute><P2P /></ProtectedRoute></WalletShell>} />
-        <Route path="/settings" element={<WalletShell><ProtectedRoute><Settings /></ProtectedRoute></WalletShell>} />
-      </Routes>
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/onboarding" element={<WalletShell><Onboarding /></WalletShell>} />
+          <Route path="/home" element={<WalletShell><ProtectedRoute><Home /></ProtectedRoute></WalletShell>} />
+          <Route path="/receive" element={<WalletShell><ProtectedRoute><Receive /></ProtectedRoute></WalletShell>} />
+          <Route path="/send" element={<WalletShell><ProtectedRoute><Send /></ProtectedRoute></WalletShell>} />
+          <Route path="/channels" element={<WalletShell><ProtectedRoute><Channels /></ProtectedRoute></WalletShell>} />
+          <Route path="/p2p" element={<WalletShell><ProtectedRoute><P2P /></ProtectedRoute></WalletShell>} />
+          <Route path="/settings" element={<WalletShell><ProtectedRoute><Settings /></ProtectedRoute></WalletShell>} />
+        </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

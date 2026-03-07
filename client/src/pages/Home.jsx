@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useWalletStore from "../store/useWalletStore";
 
 function formatSats(sats) {
-  return `${sats.toLocaleString("es-MX")} sats`;
+  return `${Number(sats).toLocaleString()} sats`;
 }
 
 function txIcon(type) {
@@ -80,7 +80,7 @@ export default function Home() {
                 <div className="flex-1 min-w-0">
                   <p className="text-white text-sm truncate">{tx.description}</p>
                   <p className="text-neutral-500 text-xs">
-                    {new Date(tx.timestamp).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                    {new Date(tx.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
                 <span className={`text-sm font-bold ${tx.type === "receive" ? "text-green-400" : "text-red-400"}`}>
