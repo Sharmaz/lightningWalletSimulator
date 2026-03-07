@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import useWalletStore from "../store/useWalletStore";
 
 export default function Onboarding() {
-  const { generateWallet, seedPhrase, initSoloMode } = useWalletStore();
+  const { generateWallet, seedPhrase, initSoloMode, addOnChainBalance } = useWalletStore();
   const [step, setStep] = useState("start");
   const navigate = useNavigate();
 
@@ -20,6 +20,7 @@ export default function Onboarding() {
   }
 
   function handleP2PMode() {
+    addOnChainBalance(100_000);
     navigate("/p2p");
   }
 
