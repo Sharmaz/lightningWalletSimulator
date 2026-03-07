@@ -15,7 +15,7 @@ function txIcon(type) {
 }
 
 export default function Home() {
-  const { lightningBalance, onChainBalance, transactions } = useWalletStore();
+  const { lightningBalance, onChainBalance, transactions, soloMode, botInvoice } = useWalletStore();
   const navigate = useNavigate();
 
   return (
@@ -43,7 +43,24 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Historial */}
+      {soloMode && botInvoice && (
+        <div className="px-6 mt-6">
+          <h2 className="text-neutral-400 text-xs uppercase tracking-wider mb-3">Bot solicita pago</h2>
+          <div className="bg-neutral-800 border border-yellow-600/30 rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <p className="text-white font-bold">{botInvoice.amount.toLocaleString()} sats</p>
+              <p className="text-neutral-400 text-sm">{botInvoice.description}</p>
+            </div>
+            <button
+              onClick={() => navigate("/send", { state: { bolt11: botInvoice.bolt11 } })}
+              className="bg-yellow-400 text-neutral-900 font-bold px-4 py-2 rounded-xl hover:bg-yellow-300 transition-colors text-sm ml-3 shrink-0"
+            >
+              Pagar
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="px-6 mt-8">
         <h2 className="text-neutral-400 text-xs uppercase tracking-wider mb-3">Historial</h2>
         {transactions.length === 0 ? (
