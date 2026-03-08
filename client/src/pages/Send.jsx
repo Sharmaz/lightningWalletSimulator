@@ -120,7 +120,7 @@ export default function Send() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-black p-6 pb-24">
+    <div className="flex flex-col min-h-screen bg-black p-6 pb-36">
       <PageHeader title="Enviar" />
 
       {scanning ? (
