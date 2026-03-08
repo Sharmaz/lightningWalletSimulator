@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useNavigate } from "react-router-dom";
 
+import useTour from "../hooks/useTour";
+import { createHomeTour } from "../lib/tours";
 import useWalletStore from "../store/useWalletStore";
 
 export default function Home() {
   const { lightningBalance, channels, transactions, soloMode, botInvoice } = useWalletStore();
   const navigate = useNavigate();
   const [balanceVisible, setBalanceVisible] = useState(false);
+  const { hasSeenTour, startTour } = useTour("home");
+
+  useEffect(() => {
+    if (!hasSeenTour()) setTimeout(() => startTour(createHomeTour), 600);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalCapacity = channels.reduce(
     (sum, c) => (c.status === "open" ? sum + c.capacity : sum),
@@ -20,9 +27,10 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-black pb-20">
 
-      <div className="flex justify-between items-center px-4 pt-12 pb-2">
+      <div id="tour-home-topbar" className="flex justify-between items-center px-4 pt-12 pb-2">
         <div className="flex gap-2">
           <button
+            id="tour-home-settings"
             onClick={() => navigate("/settings")}
             className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
           >
@@ -32,6 +40,7 @@ export default function Home() {
             </svg>
           </button>
           <button
+            id="tour-home-channels"
             onClick={() => navigate("/channels")}
             className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
           >
@@ -44,6 +53,14 @@ export default function Home() {
         </div>
         <div className="flex gap-2">
           <button
+            onClick={() => startTour(createHomeTour)}
+            className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-neutral-400 hover:text-white transition-colors font-bold text-sm"
+            aria-label="Ver tour explicativo"
+          >
+            ?
+          </button>
+          <button
+            id="tour-home-p2p"
             onClick={() => navigate("/p2p")}
             className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
           >
@@ -55,7 +72,7 @@ export default function Home() {
       </div>
 
       <div className="flex flex-col items-center py-10">
-        <button onClick={() => setBalanceVisible((v) => !v)} className="mb-4">
+        <button id="tour-home-balance" onClick={() => setBalanceVisible((v) => !v)} className="mb-4">
           {balanceVisible ? (
             <div className="text-center">
               <span className="text-4xl font-bold text-white">
@@ -73,7 +90,7 @@ export default function Home() {
         </button>
 
         {totalCapacity > 0 ? (
-          <div className="w-32 h-1.5 rounded-full bg-neutral-800">
+          <div id="tour-home-liquidity" className="w-32 h-1.5 rounded-full bg-neutral-800">
             <div
               className="h-1.5 rounded-full bg-green-400 transition-all duration-500"
               style={{ width: `${liquidityPct}%` }}
@@ -106,7 +123,7 @@ export default function Home() {
         </div>
       )}
 
-      <div className="px-4 mt-2 flex-1">
+      <div id="tour-home-transactions" className="px-4 mt-2 flex-1">
         {transactions.length === 0 ? (
           <p className="text-neutral-700 text-sm text-center py-12">Sin transacciones aún</p>
         ) : (

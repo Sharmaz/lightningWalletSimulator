@@ -4,8 +4,10 @@ import { Html5Qrcode } from "html5-qrcode";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import PageHeader from "../components/PageHeader";
+import useTour from "../hooks/useTour";
 import { decodeInvoice, isExpired } from "../lib/invoice";
 import socket from "../lib/socket";
+import { createSendTour } from "../lib/tours";
 import useWalletStore from "../store/useWalletStore";
 
 export default function Send() {
@@ -26,6 +28,11 @@ export default function Send() {
   const cameraAvailable = typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
   const scannerRef = useRef(null);
   const scannerInstanceRef = useRef(null);
+  const { hasSeenTour, startTour } = useTour("send");
+
+  useEffect(() => {
+    if (!prefilled && !hasSeenTour()) setTimeout(() => startTour(createSendTour), 400);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => () => {
     try {
@@ -119,9 +126,19 @@ export default function Send() {
     );
   }
 
+  const tourBtn = (
+    <button
+      onClick={() => startTour(createSendTour)}
+      className="w-7 h-7 rounded-full bg-neutral-800 text-neutral-400 text-xs font-bold hover:bg-neutral-700 hover:text-white transition-colors"
+      aria-label="Ver tour explicativo"
+    >
+      ?
+    </button>
+  );
+
   return (
     <div className="flex flex-col min-h-screen bg-black p-6 pb-36">
-      <PageHeader title="Enviar" />
+      <PageHeader title="Enviar" right={tourBtn} />
 
       {scanning ? (
         <div className="mb-4">
@@ -139,6 +156,7 @@ export default function Send() {
       ) : (
         <>
           <input
+            id="tour-send-input"
             value={input}
             onChange={(e) => { setInput(e.target.value); setParsed(null); setError(""); }}
             placeholder="lnsim1_..."
@@ -173,7 +191,7 @@ export default function Send() {
 
       {!scanning && !parsed && (
         <div className="fixed bottom-0 inset-x-0 bg-black border-t border-neutral-800">
-          <div className="max-w-md mx-auto flex">
+          <div id="tour-send-actions" className="max-w-md mx-auto flex">
             <button
               onClick={() => {
                 navigator.clipboard.readText?.().then((text) => {

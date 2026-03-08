@@ -7,7 +7,9 @@ import AlertBox from "../components/AlertBox";
 import FormField from "../components/FormField";
 import LiquidityBar from "../components/LiquidityBar";
 import PageHeader from "../components/PageHeader";
+import useTour from "../hooks/useTour";
 import socket from "../lib/socket";
+import { createP2PTour, createP2PChannelTour, createP2PReadyTour } from "../lib/tours";
 import useWalletStore from "../store/useWalletStore";
 
 export default function P2P() {
@@ -24,6 +26,13 @@ export default function P2P() {
   const [joinError, setJoinError] = useState("");
   const [peerDisconnectedMsg, setPeerDisconnectedMsg] = useState("");
   const prevPeerIdRef = useRef(peerId);
+  const { hasSeenTour, startTour } = useTour("p2p");
+  const { hasSeenTour: hasSeenP2PChannel, startTour: startP2PChannelTour } = useTour("p2pChannel");
+  const { hasSeenTour: hasSeenP2PReady, startTour: startP2PReadyTour } = useTour("p2pReady");
+
+  useEffect(() => {
+    if (!hasSeenTour()) setTimeout(() => startTour(createP2PTour), 400);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const p2pChannel = channels.find(
     (c) => c.peerNodeId === peerNodeId && c.status === "open",
@@ -42,6 +51,15 @@ export default function P2P() {
   else if (peerId) step = "connected";
   else if (roomCode) step = "waiting";
   else step = localStep;
+
+  useEffect(() => {
+    if (step === "connected" && !hasSeenP2PChannel()) {
+      setTimeout(() => startP2PChannelTour(createP2PChannelTour), 400);
+    } else if (step === "ready" && !hasSeenP2PReady()) {
+      const isOpener = p2pChannel?.localBalance > 0;
+      setTimeout(() => startP2PReadyTour(() => createP2PReadyTour(isOpener)), 400);
+    }
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCreateRoom() {
     createRoom();
@@ -90,7 +108,7 @@ export default function P2P() {
           Conectado con <span className="text-green-400 font-mono">{peerNodeId}</span>
         </p>
 
-        <div className="w-full bg-neutral-900 rounded-xl p-4 mb-6 text-left">
+        <div id="tour-p2p-liquidity" className="w-full bg-neutral-900 rounded-xl p-4 mb-6 text-left">
           <LiquidityBar
             localBalance={p2pChannel.localBalance}
             remoteBalance={p2pChannel.remoteBalance}
@@ -99,6 +117,7 @@ export default function P2P() {
         </div>
 
         <button
+          id="tour-p2p-home-btn"
           onClick={() => navigate("/home")}
           className="w-full bg-green-500 text-black font-bold py-3 rounded-xl hover:bg-green-400 transition-colors mb-3"
         >
@@ -126,10 +145,12 @@ export default function P2P() {
         </p>
 
         <FormField
+          id="tour-p2p-capacity"
           label={`Capacidad (sats) — disponible: ${onChainBalance.toLocaleString()}`}
-          type="number"
+          type="text"
+          inputMode="numeric"
           value={capacity}
-          onChange={(e) => setCapacity(e.target.value)}
+          onChange={(e) => setCapacity(e.target.value.replace(/\D/g, ""))}
           placeholder="Ej. 50000"
           max={onChainBalance}
           className="mb-6"
@@ -137,6 +158,7 @@ export default function P2P() {
         />
 
         <button
+          id="tour-p2p-open-btn"
           onClick={handleOpenChannel}
           disabled={openingChannel || !capacity || Number(capacity) <= 0 || Number(capacity) > onChainBalance}
           className="w-full bg-green-500 text-black font-bold py-3 rounded-xl hover:bg-green-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed mb-3"
@@ -223,15 +245,26 @@ export default function P2P() {
     );
   }
 
+  const tourBtn = (
+    <button
+      onClick={() => startTour(createP2PTour)}
+      className="w-7 h-7 rounded-full bg-neutral-800 text-neutral-400 text-xs font-bold hover:bg-neutral-700 hover:text-white transition-colors"
+      aria-label="Ver tour explicativo"
+    >
+      ?
+    </button>
+  );
+
   return (
     <div className="flex flex-col min-h-screen bg-black p-6 pb-24">
-      <PageHeader title="Modo P2P" />
+      <PageHeader title="Modo P2P" right={tourBtn} />
 
       <p className="text-neutral-400 text-sm mb-8">
         Conecta con otra persona para abrir un canal Lightning real y hacerse pagos mutuos.
       </p>
 
       <button
+        id="tour-p2p-create"
         onClick={handleCreateRoom}
         className="w-full bg-green-500 text-black font-bold py-4 rounded-xl hover:bg-green-400 transition-colors mb-4 text-base"
       >
@@ -239,6 +272,7 @@ export default function P2P() {
       </button>
 
       <button
+        id="tour-p2p-join"
         onClick={() => setLocalStep("joining")}
         className="w-full bg-neutral-800 text-white font-bold py-4 rounded-xl hover:bg-neutral-700 transition-colors text-base"
       >

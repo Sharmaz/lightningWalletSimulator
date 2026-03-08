@@ -1,15 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { useNavigate } from "react-router-dom";
 
 import AlertBox from "../components/AlertBox";
 import SeedGrid from "../components/SeedGrid";
+import useTour from "../hooks/useTour";
+import { createSeedTour } from "../lib/tours";
 import useWalletStore from "../store/useWalletStore";
 
 export default function Onboarding() {
   const { generateWallet, seedPhrase, initSoloMode, addOnChainBalance } = useWalletStore();
   const [step, setStep] = useState("start");
   const navigate = useNavigate();
+  const { hasSeenTour, startTour } = useTour("seed");
+
+  useEffect(() => {
+    if (step === "seed" && !hasSeenTour()) {
+      setTimeout(() => startTour(createSeedTour), 400);
+    }
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleGenerate() {
     generateWallet();
@@ -73,23 +82,33 @@ export default function Onboarding() {
 
   return (
     <div className="flex flex-col min-h-screen bg-black p-6">
-      <div className="mb-6 text-center">
+      <div id="tour-seed-header" className="mb-6 text-center relative">
         <div className="text-4xl mb-3">🔑</div>
         <h2 className="text-xl font-bold text-white">Tu seed phrase</h2>
         <p className="text-neutral-400 text-sm mt-1">
           Estas 12 palabras son las llaves de tu wallet. En una wallet real, deberías guardarlas offline.
         </p>
+        <button
+          onClick={() => startTour(createSeedTour)}
+          className="absolute top-0 right-0 w-7 h-7 rounded-full bg-neutral-800 text-neutral-400 text-xs font-bold hover:bg-neutral-700 hover:text-white transition-colors"
+          aria-label="Ver tour explicativo"
+        >
+          ?
+        </button>
       </div>
 
-      <div className="mb-6">
+      <div id="tour-seed-grid" className="mb-6">
         <SeedGrid words={seedPhrase} />
       </div>
 
-      <AlertBox className="mb-6">
-        ⚠️ En una wallet real, nunca compartas estas palabras con nadie. Quien las tenga, controla tus fondos.
-      </AlertBox>
+      <div id="tour-seed-alert">
+        <AlertBox className="mb-6">
+          ⚠️ En una wallet real, nunca compartas estas palabras con nadie. Quien las tenga, controla tus fondos.
+        </AlertBox>
+      </div>
 
       <button
+        id="tour-seed-continue"
         onClick={() => setStep("mode")}
         className="w-full bg-green-500 text-black font-bold py-3 rounded-xl text-base hover:bg-green-400 transition-colors mt-auto"
       >

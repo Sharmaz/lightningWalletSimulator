@@ -16,13 +16,13 @@ import useWalletStore from "./store/useWalletStore";
 function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  if (["/", "/onboarding", "/send"].includes(location.pathname)) return null;
+  if (["/", "/onboarding", "/send", "/p2p"].includes(location.pathname)) return null;
 
   const active = (path) => location.pathname === path;
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-10 bg-black border-t border-neutral-800">
-      <div className="max-w-md mx-auto flex">
+    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-10 bg-black border-t border-neutral-800">
+      <div className="flex">
         <button
           onClick={() => navigate("/receive")}
           className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-colors ${
