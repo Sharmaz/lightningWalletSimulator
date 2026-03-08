@@ -2,6 +2,7 @@ import { Component } from "react";
 
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 
+import { BASE_URL } from "./lib/env";
 import Channels from "./pages/Channels";
 import Home from "./pages/Home";
 import Landing from "./pages/Landing";
@@ -89,7 +90,7 @@ function WalletShell({ children }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={BASE_URL}>
       <ErrorBoundary>
         <Routes>
           <Route path="/" element={<Landing />} />
