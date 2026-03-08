@@ -3,11 +3,12 @@ import react from "@vitejs/plugin-react-oxc";
 import { defineConfig } from "vite";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  base: mode === "production" ? "/lightningWalletSimulator/" : "/",
   plugins: [
     react(),
     nodePolyfills(),
-    basicSsl(),
+    ...(mode === "production" ? [] : [basicSsl()]),
   ],
   server: {
     proxy: {
@@ -18,4 +19,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
