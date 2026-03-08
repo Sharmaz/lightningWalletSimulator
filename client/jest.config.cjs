@@ -12,6 +12,9 @@ const config = {
     "^uuid$": "<rootDir>/__mocks__/uuid.js",
     "^.+/lib/socket(\\.js)?$": "<rootDir>/__mocks__/socket.js",
     "^.+/lib/env(\\.js)?$": "<rootDir>/__mocks__/env.js",
+    "^.+/lib/tours(\\.js)?$": "<rootDir>/__mocks__/tours.js",
+    "driver\\.js/dist/driver\\.css$": "<rootDir>/__mocks__/fileMock.js",
+    "^driver\\.js$": "<rootDir>/__mocks__/driverjs.js",
   },
 };
 
