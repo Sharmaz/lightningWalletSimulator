@@ -24,7 +24,7 @@ export default function Channels() {
   const navigate = useNavigate();
   const openChannels = channels.filter((c) => c.status !== "closed");
   const { hasSeenTour: hasSeenChannels, startTour: startChannelsTour } = useTour("channels");
-  const { hasSeenTour: hasSeenLiquidity, startTour: startLiquidityTour } = useTour("liquidity");
+  const { startTour: startLiquidityTour } = useTour("liquidity");
 
   useEffect(() => {
     if (!hasSeenChannels()) {
