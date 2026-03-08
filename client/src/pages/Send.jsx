@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import PageHeader from "../components/PageHeader";
 import { decodeInvoice, isExpired } from "../lib/invoice";
 import socket from "../lib/socket";
 import useWalletStore from "../store/useWalletStore";
@@ -120,19 +121,7 @@ export default function Send() {
 
   return (
     <div className="flex flex-col min-h-screen bg-black p-6 pb-24">
-      <div className="flex items-center mb-6">
-        <button
-          onClick={() => navigate("/home")}
-          className="text-green-400 text-sm font-semibold flex items-center gap-1"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Inicio
-        </button>
-        <h2 className="text-white font-bold text-base flex-1 text-center">Enviar</h2>
-        <div className="w-16" />
-      </div>
+      <PageHeader title="Enviar" />
 
       {scanning ? (
         <div className="mb-4">

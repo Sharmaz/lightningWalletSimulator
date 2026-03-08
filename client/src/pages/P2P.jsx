@@ -3,6 +3,10 @@ import { useState, useEffect, useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { useNavigate } from "react-router-dom";
 
+import AlertBox from "../components/AlertBox";
+import FormField from "../components/FormField";
+import LiquidityBar from "../components/LiquidityBar";
+import PageHeader from "../components/PageHeader";
 import socket from "../lib/socket";
 import useWalletStore from "../store/useWalletStore";
 
@@ -87,20 +91,11 @@ export default function P2P() {
         </p>
 
         <div className="w-full bg-neutral-900 rounded-xl p-4 mb-6 text-left">
-          <div className="flex h-3 rounded-full overflow-hidden mb-3 bg-neutral-800">
-            <div
-              className="bg-green-400 transition-all duration-500"
-              style={{ width: `${p2pChannel.capacity > 0 ? (p2pChannel.localBalance / p2pChannel.capacity) * 100 : 0}%` }}
-            />
-            <div
-              className="bg-blue-500 transition-all duration-500"
-              style={{ width: `${p2pChannel.capacity > 0 ? (p2pChannel.remoteBalance / p2pChannel.capacity) * 100 : 0}%` }}
-            />
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-green-400">↑ {p2pChannel.localBalance.toLocaleString()} sats (tuyo)</span>
-            <span className="text-blue-400">↓ {p2pChannel.remoteBalance.toLocaleString()} sats (peer)</span>
-          </div>
+          <LiquidityBar
+            localBalance={p2pChannel.localBalance}
+            remoteBalance={p2pChannel.remoteBalance}
+            capacity={p2pChannel.capacity}
+          />
         </div>
 
         <button
@@ -130,16 +125,15 @@ export default function P2P() {
           Define cuántos sats quieres poner en el canal. Serán tu liquidez de salida.
         </p>
 
-        <label className="text-neutral-500 text-xs mb-1">
-          Capacidad (sats) — disponible: {onChainBalance.toLocaleString()}
-        </label>
-        <input
+        <FormField
+          label={`Capacidad (sats) — disponible: ${onChainBalance.toLocaleString()}`}
           type="number"
           value={capacity}
           onChange={(e) => setCapacity(e.target.value)}
           placeholder="Ej. 50000"
           max={onChainBalance}
-          className="bg-neutral-900 text-white rounded-xl px-4 py-3 mb-6 outline-none focus:ring-2 focus:ring-green-400 text-base"
+          className="mb-6"
+          inputClassName=""
         />
 
         <button
@@ -180,9 +174,7 @@ export default function P2P() {
           </>
         )}
         {peerDisconnectedMsg && (
-          <div className="bg-red-900/40 border border-red-600/40 rounded-xl px-4 py-3 mt-4 text-red-300 text-sm">
-            {peerDisconnectedMsg}
-          </div>
+          <AlertBox variant="error" className="mt-4">{peerDisconnectedMsg}</AlertBox>
         )}
         <button onClick={handleLeave} className="text-neutral-500 text-sm py-2 mt-4">
           Cancelar
@@ -218,7 +210,7 @@ export default function P2P() {
           className="bg-neutral-900 text-white rounded-xl px-4 py-3 mb-4 outline-none focus:ring-2 focus:ring-green-400 text-base font-mono tracking-widest text-center uppercase"
         />
 
-        {joinError && <p className="text-red-400 text-sm mb-4">{joinError}</p>}
+        {joinError && <AlertBox variant="error" className="mb-4">{joinError}</AlertBox>}
 
         <button
           onClick={handleJoinRoom}
@@ -233,19 +225,7 @@ export default function P2P() {
 
   return (
     <div className="flex flex-col min-h-screen bg-black p-6 pb-24">
-      <div className="flex items-center mb-8">
-        <button
-          onClick={() => navigate("/home")}
-          className="text-green-400 text-sm font-semibold flex items-center gap-1"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Inicio
-        </button>
-        <h2 className="text-white font-bold text-base flex-1 text-center">Modo P2P</h2>
-        <div className="w-16" />
-      </div>
+      <PageHeader title="Modo P2P" />
 
       <p className="text-neutral-400 text-sm mb-8">
         Conecta con otra persona para abrir un canal Lightning real y hacerse pagos mutuos.

@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 
 import { QRCodeSVG } from "qrcode.react";
-import { useNavigate } from "react-router-dom";
 
+import FormField from "../components/FormField";
+import PageHeader from "../components/PageHeader";
 import Toast from "../components/Toast";
 import useWalletStore from "../store/useWalletStore";
 
 export default function Receive() {
   const { createInvoice, invoices } = useWalletStore();
-  const navigate = useNavigate();
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [invoice, setInvoice] = useState(null);
@@ -49,19 +49,7 @@ export default function Receive() {
       <div className="flex flex-col items-center min-h-screen bg-black p-6 pb-24">
         {toast && <Toast message={toast} onDone={() => setToast(null)} />}
 
-        <div className="w-full flex items-center mb-6">
-          <button
-            onClick={() => navigate("/home")}
-            className="text-green-400 text-sm font-semibold flex items-center gap-1"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-            Inicio
-          </button>
-          <h2 className="text-white font-bold text-base flex-1 text-center">Recibir</h2>
-          <div className="w-16" />
-        </div>
+        <PageHeader title="Recibir" />
 
         <div className="bg-white p-4 rounded-2xl mb-4">
           <QRCodeSVG value={invoice.bolt11} size={220} />
@@ -104,38 +92,25 @@ export default function Receive() {
 
   return (
     <div className="flex flex-col min-h-screen bg-black p-6 pb-24">
-      <div className="flex items-center mb-6">
-        <button
-          onClick={() => navigate("/home")}
-          className="text-green-400 text-sm font-semibold flex items-center gap-1"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Inicio
-        </button>
-        <h2 className="text-white font-bold text-base flex-1 text-center">Recibir</h2>
-        <div className="w-16" />
-      </div>
+      <PageHeader title="Recibir" />
 
       <p className="text-neutral-400 text-sm mb-6">Crea un invoice Lightning para recibir sats</p>
 
-      <label className="text-neutral-500 text-xs mb-1">Monto (sats)</label>
-      <input
+      <FormField
+        label="Monto (sats)"
         type="number"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
         placeholder="Ej. 1000"
-        className="bg-neutral-900 text-white rounded-xl px-4 py-3 mb-4 outline-none focus:ring-2 focus:ring-green-400 text-base"
+        className="mb-4"
       />
 
-      <label className="text-neutral-500 text-xs mb-1">Descripción (opcional)</label>
-      <input
-        type="text"
+      <FormField
+        label="Descripción (opcional)"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Ej. Café"
-        className="bg-neutral-900 text-white rounded-xl px-4 py-3 mb-6 outline-none focus:ring-2 focus:ring-green-400 text-base"
+        className="mb-6"
       />
 
       <button

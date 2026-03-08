@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
+import AlertBox from "../components/AlertBox";
+import SeedGrid from "../components/SeedGrid";
 import useWalletStore from "../store/useWalletStore";
 
 export default function Onboarding() {
@@ -79,23 +81,13 @@ export default function Onboarding() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 mb-6">
-        {seedPhrase.map((word, i) => (
-          <div
-            key={i}
-            className="bg-neutral-900 rounded-lg px-3 py-2 flex items-center gap-2"
-          >
-            <span className="text-neutral-500 text-xs w-4">{i + 1}.</span>
-            <span className="text-white text-sm font-mono">{word}</span>
-          </div>
-        ))}
+      <div className="mb-6">
+        <SeedGrid words={seedPhrase} />
       </div>
 
-      <div className="bg-amber-900/30 border border-amber-600/40 rounded-xl p-4 mb-6">
-        <p className="text-amber-400 text-xs">
-          ⚠️ En una wallet real, nunca compartas estas palabras con nadie. Quien las tenga, controla tus fondos.
-        </p>
-      </div>
+      <AlertBox className="mb-6">
+        ⚠️ En una wallet real, nunca compartas estas palabras con nadie. Quien las tenga, controla tus fondos.
+      </AlertBox>
 
       <button
         onClick={() => setStep("mode")}

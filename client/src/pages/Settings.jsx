@@ -1,29 +1,17 @@
 import { useState } from "react";
 
-import { useNavigate } from "react-router-dom";
-
+import AlertBox from "../components/AlertBox";
+import PageHeader from "../components/PageHeader";
+import SeedGrid from "../components/SeedGrid";
 import useWalletStore from "../store/useWalletStore";
 
 export default function Settings() {
   const { seedPhrase, nodeId } = useWalletStore();
-  const navigate = useNavigate();
   const [seedVisible, setSeedVisible] = useState(false);
 
   return (
     <div className="flex flex-col min-h-screen bg-black p-6 pb-24">
-      <div className="flex items-center mb-6">
-        <button
-          onClick={() => navigate("/home")}
-          className="text-green-400 text-sm font-semibold flex items-center gap-1"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Inicio
-        </button>
-        <h2 className="text-white font-bold text-base flex-1 text-center">Configuración</h2>
-        <div className="w-16" />
-      </div>
+      <PageHeader title="Configuración" />
 
       <div className="flex items-center gap-3 mb-8">
         <div className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center text-green-400 font-bold text-lg shrink-0">
@@ -76,27 +64,14 @@ export default function Settings() {
             </button>
           </div>
 
-          {seedVisible ? (
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {seedPhrase.map((word, i) => (
-                <div key={i} className="bg-neutral-800 rounded-lg px-2 py-1.5 flex items-center gap-1">
-                  <span className="text-neutral-600 text-xs">{i + 1}.</span>
-                  <span className="text-white text-xs font-mono">{word}</span>
-                </div>
-              ))}
-              <p className="col-span-3 text-amber-500 text-xs mt-2">
+          <div className="mt-3">
+            <SeedGrid words={seedPhrase} visible={seedVisible} />
+            {seedVisible && (
+              <AlertBox variant="warning" className="mt-2">
                 ⚠️ En una wallet real, nunca compartas estas palabras.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {seedPhrase.map((_, i) => (
-                <div key={i} className="bg-neutral-800 rounded-lg px-2 py-1.5 h-8 flex items-center">
-                  <div className="h-2 bg-neutral-700 rounded w-full" />
-                </div>
-              ))}
-            </div>
-          )}
+              </AlertBox>
+            )}
+          </div>
         </div>
       </div>
     </div>
