@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
+import LiquidityBar from "../components/LiquidityBar";
+import PageHeader from "../components/PageHeader";
 import useWalletStore from "../store/useWalletStore";
 
 function statusLabel(status) {
@@ -19,9 +21,10 @@ export default function Channels() {
   const openChannels = channels.filter((c) => c.status !== "closed");
 
   return (
-    <div className="flex flex-col min-h-screen bg-neutral-900 p-6 pb-24">
-      <h2 className="text-white font-bold text-lg mb-1">Canales</h2>
-      <p className="text-neutral-400 text-sm mb-6">
+    <div className="flex flex-col min-h-screen bg-black p-6 pb-24">
+      <PageHeader title="Canales" />
+
+      <p className="text-neutral-500 text-sm mb-6">
         On-chain disponible: <span className="text-white">{onChainBalance.toLocaleString()} sats</span>
       </p>
 
@@ -29,8 +32,8 @@ export default function Channels() {
         onClick={() => navigate("/p2p")}
         className={`w-full font-bold py-3 rounded-xl mb-6 transition-colors ${
           p2pMode
-            ? "bg-green-700 text-green-200"
-            : "bg-neutral-700 text-white hover:bg-neutral-600"
+            ? "bg-green-900/40 text-green-400 border border-green-600/40"
+            : "bg-neutral-800 text-white hover:bg-neutral-700"
         }`}
       >
         {p2pMode ? "⚡ P2P activo" : "Conectar en modo P2P"}
@@ -44,46 +47,27 @@ export default function Channels() {
         </div>
       ) : (
         <div className="space-y-4">
-          {openChannels.map((ch) => {
-            const localPct = ch.capacity > 0 ? (ch.localBalance / ch.capacity) * 100 : 0;
-            const remotePct = 100 - localPct;
-            return (
-              <div key={ch.id} className="bg-neutral-800 rounded-xl p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-neutral-400 text-xs font-mono truncate max-w-[60%]">
-                    {ch.peerNodeId}
-                  </span>
-                  <span className={`text-xs font-semibold ${statusColor(ch.status)}`}>
-                    {statusLabel(ch.status)}
-                  </span>
-                </div>
-
-                {/* Barra de liquidez */}
-                <div className="flex h-3 rounded-full overflow-hidden mb-2 bg-neutral-700">
-                  <div
-                    className="bg-yellow-400 transition-all duration-500"
-                    style={{ width: `${localPct}%` }}
-                  />
-                  <div
-                    className="bg-blue-500 transition-all duration-500"
-                    style={{ width: `${remotePct}%` }}
-                  />
-                </div>
-
-                <div className="flex justify-between text-xs">
-                  <span className="text-yellow-400">
-                    ↑ {ch.localBalance.toLocaleString()} sats (tuyo)
-                  </span>
-                  <span className="text-blue-400">
-                    ↓ {ch.remoteBalance.toLocaleString()} sats (peer)
-                  </span>
-                </div>
-                <p className="text-neutral-600 text-xs mt-1 text-center">
-                  Capacidad total: {ch.capacity.toLocaleString()} sats
-                </p>
+          {openChannels.map((ch) => (
+            <div key={ch.id} className="bg-neutral-900 rounded-xl p-4">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-neutral-500 text-xs font-mono truncate max-w-[60%]">
+                  {ch.peerNodeId}
+                </span>
+                <span className={`text-xs font-semibold ${statusColor(ch.status)}`}>
+                  {statusLabel(ch.status)}
+                </span>
               </div>
-            );
-          })}
+
+              <LiquidityBar
+                localBalance={ch.localBalance}
+                remoteBalance={ch.remoteBalance}
+                capacity={ch.capacity}
+              />
+              <p className="text-neutral-700 text-xs mt-1 text-center">
+                Capacidad total: {ch.capacity.toLocaleString()} sats
+              </p>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -55,25 +55,34 @@ describe("Onboarding", () => {
     fireEvent.click(screen.getByRole("button", { name: /crear mi wallet/i }));
     fireEvent.click(screen.getByRole("button", { name: /entendido/i }));
 
-    expect(screen.getByText("Elige tu modo")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /solo mode/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /modo p2p/i })).toBeInTheDocument();
+    expect(screen.getByText("Elige tu modalidad")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /modalidad solo/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /modalidad p2p/i })).toBeInTheDocument();
   });
 
-  it("navigates to /home after selecting Solo Mode", () => {
+  it("P2P is the primary (first) button in mode selection", () => {
     renderOnboarding();
     fireEvent.click(screen.getByRole("button", { name: /crear mi wallet/i }));
     fireEvent.click(screen.getByRole("button", { name: /entendido/i }));
-    fireEvent.click(screen.getByRole("button", { name: /solo mode/i }));
+
+    const buttons = screen.getAllByRole("button");
+    expect(buttons[0].textContent).toMatch(/modalidad p2p/i);
+  });
+
+  it("navigates to /home after selecting Modalidad Solo", () => {
+    renderOnboarding();
+    fireEvent.click(screen.getByRole("button", { name: /crear mi wallet/i }));
+    fireEvent.click(screen.getByRole("button", { name: /entendido/i }));
+    fireEvent.click(screen.getByRole("button", { name: /modalidad solo/i }));
 
     expect(mockNavigate).toHaveBeenCalledWith("/home");
   });
 
-  it("navigates to /p2p after selecting Modo P2P", () => {
+  it("navigates to /p2p after selecting Modalidad P2P", () => {
     renderOnboarding();
     fireEvent.click(screen.getByRole("button", { name: /crear mi wallet/i }));
     fireEvent.click(screen.getByRole("button", { name: /entendido/i }));
-    fireEvent.click(screen.getByRole("button", { name: /modo p2p/i }));
+    fireEvent.click(screen.getByRole("button", { name: /modalidad p2p/i }));
 
     expect(mockNavigate).toHaveBeenCalledWith("/p2p");
   });
@@ -85,11 +94,11 @@ describe("Onboarding", () => {
     expect(useWalletStore.getState().isInitialized).toBe(true);
   });
 
-  it("sets up solo mode state after selecting Solo Mode", () => {
+  it("sets up solo mode state after selecting Modalidad Solo", () => {
     renderOnboarding();
     fireEvent.click(screen.getByRole("button", { name: /crear mi wallet/i }));
     fireEvent.click(screen.getByRole("button", { name: /entendido/i }));
-    fireEvent.click(screen.getByRole("button", { name: /solo mode/i }));
+    fireEvent.click(screen.getByRole("button", { name: /modalidad solo/i }));
 
     expect(useWalletStore.getState().soloMode).toBe(true);
     expect(useWalletStore.getState().lightningBalance).toBe(50_000);

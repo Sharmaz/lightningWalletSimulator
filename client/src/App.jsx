@@ -13,36 +13,40 @@ import Send from "./pages/Send";
 import Settings from "./pages/Settings";
 import useWalletStore from "./store/useWalletStore";
 
-const NAV_ITEMS = [
-  { path: "/home", label: "Inicio", icon: "🏠" },
-  { path: "/channels", label: "Canales", icon: "⚡" },
-  { path: "/receive", label: "Recibir", icon: "↓" },
-  { path: "/send", label: "Enviar", icon: "↑" },
-  { path: "/settings", label: "Ajustes", icon: "⚙️" },
-];
-
 function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  if (location.pathname === "/" || location.pathname === "/onboarding") return null;
+  if (["/", "/onboarding", "/send"].includes(location.pathname)) return null;
+
+  const active = (path) => location.pathname === path;
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 bg-neutral-800 border-t border-neutral-700 flex">
-      {NAV_ITEMS.map((item) => {
-        const active = location.pathname === item.path;
-        return (
-          <button
-            key={item.path}
-            onClick={() => navigate(item.path)}
-            className={`flex-1 flex flex-col items-center py-2 text-xs transition-colors ${
-              active ? "text-yellow-400" : "text-neutral-500 hover:text-neutral-300"
-            }`}
-          >
-            <span className="text-lg leading-none mb-0.5">{item.icon}</span>
-            {item.label}
-          </button>
-        );
-      })}
+    <nav className="fixed bottom-0 inset-x-0 z-10 bg-black border-t border-neutral-800">
+      <div className="max-w-md mx-auto flex">
+        <button
+          onClick={() => navigate("/receive")}
+          className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-colors ${
+            active("/receive") ? "text-green-400" : "text-neutral-500 hover:text-white"
+          }`}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 3v12M7 12l5 5 5-5M5 20h14" />
+          </svg>
+          Recibir
+        </button>
+        <div className="w-px bg-neutral-800 my-3" />
+        <button
+          onClick={() => navigate("/send")}
+          className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-colors ${
+            active("/send") ? "text-green-400" : "text-neutral-500 hover:text-white"
+          }`}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
+          </svg>
+          Enviar
+        </button>
+      </div>
     </nav>
   );
 }
@@ -58,11 +62,11 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.error) {
       return (
-        <div className="min-h-screen bg-neutral-900 flex flex-col items-center justify-center p-6 text-center">
+        <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
           <p className="text-red-400 font-bold mb-2">Error</p>
           <p className="text-neutral-400 text-sm font-mono break-all">{this.state.error}</p>
           <button
-            className="mt-6 bg-yellow-400 text-neutral-900 font-bold py-2 px-6 rounded-xl"
+            className="mt-6 bg-green-500 text-black font-bold py-2 px-6 rounded-xl"
             onClick={() => { this.setState({ error: null }); window.location.href = "/home"; }}
           >
             Reintentar
@@ -81,7 +85,7 @@ function ProtectedRoute({ children }) {
 
 function WalletShell({ children }) {
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-neutral-900 relative">
+    <div className="max-w-md mx-auto min-h-screen bg-black relative">
       {children}
       <BottomNav />
     </div>

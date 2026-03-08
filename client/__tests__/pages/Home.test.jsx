@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 
@@ -9,8 +9,15 @@ jest.mock("bip39", () => ({
   generateMnemonic: () => "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
 }));
 
+const mockNavigate = jest.fn();
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => mockNavigate,
+}));
+
 beforeEach(() => {
   useWalletStore.getState().reset();
+  mockNavigate.mockClear();
 });
 
 const renderHome = () => render(
@@ -20,31 +27,39 @@ const renderHome = () => render(
 );
 
 describe("Home", () => {
-  it("shows 0 sats lightning balance initially", () => {
+  it("hides the balance behind dots by default", () => {
     renderHome();
 
-    expect(screen.getByText("0 sats")).toBeInTheDocument();
+    expect(screen.queryByText(/sats/i)).not.toBeInTheDocument();
+    expect(screen.getAllByRole("generic").some((el) => el.className.includes("rounded-full") && el.className.includes("bg-neutral"),
+    )).toBe(true);
   });
 
-  it("shows the correct lightning balance from store", () => {
+  it("reveals balance when dots are clicked", () => {
     useWalletStore.setState({ lightningBalance: 50_000 });
-    renderHome();
+    const { container } = renderHome();
 
-    expect(screen.getByText("50,000 sats")).toBeInTheDocument();
+    const dotsBtn = container.querySelector("button .rounded-full.bg-neutral-600")?.closest("button");
+    fireEvent.click(dotsBtn);
+
+    expect(screen.getByText("50,000")).toBeInTheDocument();
+    expect(screen.getByText("sat")).toBeInTheDocument();
   });
 
-  it("shows the on-chain balance", () => {
-    useWalletStore.setState({ onChainBalance: 100_000 });
+  it("shows 'añade liquidez' button when there are no open channels", () => {
     renderHome();
 
-    expect(screen.getByText(/on-chain/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /añade liquidez/i })).toBeInTheDocument();
   });
 
-  it("renders Recibir and Enviar buttons", () => {
+  it("shows liquidity bar when there are open channels", () => {
+    useWalletStore.setState({
+      lightningBalance: 25_000,
+      channels: [{ id: "ch1", status: "open", capacity: 50_000, localBalance: 25_000, remoteBalance: 25_000, peerNodeId: "peer1" }],
+    });
     renderHome();
 
-    expect(screen.getByRole("button", { name: /recibir/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /enviar/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /añade liquidez/i })).not.toBeInTheDocument();
   });
 
   it("shows empty history message when there are no transactions", () => {
@@ -66,5 +81,34 @@ describe("Home", () => {
     renderHome();
 
     expect(screen.getByText("Pago de prueba")).toBeInTheDocument();
+  });
+
+  it("shows bot invoice card in solo mode", () => {
+    useWalletStore.setState({
+      soloMode: true,
+      botInvoice: { bolt11: "lnsim1_test", amount: 1000, description: "Bot invoice" },
+    });
+    renderHome();
+
+    expect(screen.getByText("Bot invoice")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /pagar/i })).toBeInTheDocument();
+  });
+
+  it("navigates to settings when gear icon is clicked", () => {
+    renderHome();
+
+    const buttons = screen.getAllByRole("button");
+    fireEvent.click(buttons[0]);
+
+    expect(mockNavigate).toHaveBeenCalledWith("/settings");
+  });
+
+  it("navigates to channels when list icon is clicked", () => {
+    renderHome();
+
+    const buttons = screen.getAllByRole("button");
+    fireEvent.click(buttons[1]);
+
+    expect(mockNavigate).toHaveBeenCalledWith("/channels");
   });
 });

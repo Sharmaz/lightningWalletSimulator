@@ -43,8 +43,48 @@ describe("Receive", () => {
     fireEvent.change(screen.getByPlaceholderText(/1000/i), { target: { value: "500" } });
     fireEvent.click(screen.getByRole("button", { name: /generar invoice/i }));
 
-    expect(screen.getByText(/invoice generado/i)).toBeInTheDocument();
     expect(screen.getByText(/lnsim1_/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /copiar/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /editar/i })).toBeInTheDocument();
+  });
+
+  it("shows amount after generating an invoice", () => {
+    renderReceive();
+
+    fireEvent.change(screen.getByPlaceholderText(/1000/i), { target: { value: "500" } });
+    fireEvent.click(screen.getByRole("button", { name: /generar invoice/i }));
+
+    expect(screen.getByText("500 sat")).toBeInTheDocument();
+  });
+
+  it("shows 'sin descripción' when no description is provided", () => {
+    renderReceive();
+
+    fireEvent.change(screen.getByPlaceholderText(/1000/i), { target: { value: "500" } });
+    fireEvent.click(screen.getByRole("button", { name: /generar invoice/i }));
+
+    expect(screen.getByText("sin descripción")).toBeInTheDocument();
+  });
+
+  it("shows description when provided", () => {
+    renderReceive();
+
+    fireEvent.change(screen.getByPlaceholderText(/1000/i), { target: { value: "500" } });
+    fireEvent.change(screen.getByPlaceholderText(/café/i), { target: { value: "Almuerzo" } });
+    fireEvent.click(screen.getByRole("button", { name: /generar invoice/i }));
+
+    expect(screen.getByText("Almuerzo")).toBeInTheDocument();
+  });
+
+  it("editar button returns to the form with values pre-filled", () => {
+    renderReceive();
+
+    fireEvent.change(screen.getByPlaceholderText(/1000/i), { target: { value: "500" } });
+    fireEvent.click(screen.getByRole("button", { name: /generar invoice/i }));
+    fireEvent.click(screen.getByRole("button", { name: /editar/i }));
+
+    expect(screen.getByRole("button", { name: /generar invoice/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/1000/i).value).toBe("500");
   });
 
   it("shows toast when invoice is marked as paid", () => {
@@ -77,9 +117,7 @@ describe("Receive", () => {
     });
 
     expect(screen.getByText(/pago recibido/i)).toBeInTheDocument();
-
     act(() => jest.advanceTimersByTime(3300));
-
     expect(screen.queryByText(/pago recibido/i)).not.toBeInTheDocument();
   });
 });
