@@ -17,7 +17,7 @@ export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-neutral-900 text-white">
+    <div className="min-h-screen bg-black text-white">
       <header className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
         <div className="flex items-center gap-2 font-bold text-lg">
           <span>⚡</span>
@@ -25,7 +25,7 @@ export default function Landing() {
         </div>
         <button
           onClick={() => navigate("/onboarding")}
-          className="bg-yellow-400 text-neutral-900 font-bold px-5 py-2 rounded-xl text-sm hover:bg-yellow-300 transition-colors"
+          className="bg-green-500 text-black font-bold px-5 py-2 rounded-xl text-sm hover:bg-green-400 transition-colors"
         >
           Probar ahora
         </button>
@@ -42,7 +42,7 @@ export default function Landing() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => navigate("/onboarding")}
-            className="bg-yellow-400 text-neutral-900 font-bold py-4 px-8 rounded-xl text-base hover:bg-yellow-300 transition-colors"
+            className="bg-green-500 text-black font-bold py-4 px-8 rounded-xl text-base hover:bg-green-400 transition-colors"
           >
             Probar el simulador
           </button>
@@ -54,19 +54,19 @@ export default function Landing() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
           <button
             onClick={() => navigate("/onboarding")}
-            className="bg-neutral-800 rounded-xl p-6 text-left hover:bg-neutral-700 transition-colors border border-neutral-700"
+            className="bg-neutral-900 rounded-xl p-6 text-left hover:bg-neutral-800 transition-colors border border-neutral-800"
           >
-            <div className="text-3xl mb-3">🤖</div>
-            <p className="font-bold text-base mb-1">Solo Mode</p>
-            <p className="text-neutral-400 text-sm">Un bot simula los pagos contigo. Perfecto para explorar a tu propio ritmo.</p>
+            <div className="text-3xl mb-3">👥</div>
+            <p className="font-bold text-base mb-1">Modalidad P2P</p>
+            <p className="text-neutral-400 text-sm">Conecta con otra persona en tiempo real y haz pagos de verdad.</p>
           </button>
           <button
             onClick={() => navigate("/onboarding")}
-            className="bg-neutral-800 rounded-xl p-6 text-left hover:bg-neutral-700 transition-colors border border-neutral-700"
+            className="bg-neutral-900 rounded-xl p-6 text-left hover:bg-neutral-800 transition-colors border border-neutral-800"
           >
-            <div className="text-3xl mb-3">👥</div>
-            <p className="font-bold text-base mb-1">Modo P2P</p>
-            <p className="text-neutral-400 text-sm">Conecta con otra persona en tiempo real y haz pagos de verdad.</p>
+            <div className="text-3xl mb-3">🤖</div>
+            <p className="font-bold text-base mb-1">Modalidad Solo</p>
+            <p className="text-neutral-400 text-sm">Un bot simula los pagos contigo. Perfecto para explorar a tu propio ritmo.</p>
           </button>
         </div>
       </section>
@@ -75,7 +75,7 @@ export default function Landing() {
         <h2 className="text-white font-bold text-2xl mb-8 text-center">¿Qué vas a aprender?</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {LEARN_ITEMS.map((item) => (
-            <div key={item.title} className="bg-neutral-800 rounded-xl p-5">
+            <div key={item.title} className="bg-neutral-900 rounded-xl p-5">
               <div className="text-3xl mb-3">{item.icon}</div>
               <p className="font-bold text-sm mb-2">{item.title}</p>
               <p className="text-neutral-400 text-xs leading-relaxed">{item.desc}</p>
@@ -88,8 +88,8 @@ export default function Landing() {
         <h2 className="text-white font-bold text-2xl mb-8 text-center">¿Cómo funciona?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {HOW_STEPS.map((s) => (
-            <div key={s.step} className="flex md:flex-col items-start gap-4 bg-neutral-800 rounded-xl p-6">
-              <div className="w-10 h-10 rounded-full bg-yellow-400 text-neutral-900 font-bold flex items-center justify-center text-base shrink-0">
+            <div key={s.step} className="flex md:flex-col items-start gap-4 bg-neutral-900 rounded-xl p-6">
+              <div className="w-10 h-10 rounded-full bg-green-500 text-black font-bold flex items-center justify-center text-base shrink-0">
                 {s.step}
               </div>
               <div>
@@ -102,11 +102,11 @@ export default function Landing() {
       </section>
 
       <section className="max-w-5xl mx-auto px-6 pb-8 text-center">
-        <h2 className="text-white font-bold text-2xl mb-3">Listo para empezar?</h2>
+        <h2 className="text-white font-bold text-2xl mb-3">¿Listo para empezar?</h2>
         <p className="text-neutral-400 text-sm mb-8">Gratis, sin registro, sin bitcoin real.</p>
         <button
           onClick={() => navigate("/onboarding")}
-          className="bg-yellow-400 text-neutral-900 font-bold py-4 px-10 rounded-xl text-base hover:bg-yellow-300 transition-colors"
+          className="bg-green-500 text-black font-bold py-4 px-10 rounded-xl text-base hover:bg-green-400 transition-colors"
         >
           Empezar ahora
         </button>

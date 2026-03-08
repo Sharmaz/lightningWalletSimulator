@@ -5,6 +5,8 @@ import { QRCodeSVG } from "qrcode.react";
 import FormField from "../components/FormField";
 import PageHeader from "../components/PageHeader";
 import Toast from "../components/Toast";
+import useTour from "../hooks/useTour";
+import { createReceiveTour } from "../lib/tours";
 import useWalletStore from "../store/useWalletStore";
 
 export default function Receive() {
@@ -15,6 +17,13 @@ export default function Receive() {
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState(null);
   const canShare = typeof navigator !== "undefined" && !!navigator.share;
+  const { hasSeenTour, startTour } = useTour("receive");
+
+  useEffect(() => {
+    if (!invoice && !hasSeenTour()) {
+      setTimeout(() => startTour(createReceiveTour), 400);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!invoice) return;
@@ -112,30 +121,46 @@ export default function Receive() {
     );
   }
 
+  const tourBtn = (
+    <button
+      onClick={() => startTour(createReceiveTour)}
+      className="w-7 h-7 rounded-full bg-neutral-800 text-neutral-400 text-xs font-bold hover:bg-neutral-700 hover:text-white transition-colors"
+      aria-label="Ver tour explicativo"
+    >
+      ?
+    </button>
+  );
+
   return (
     <div className="flex flex-col min-h-screen bg-black p-6 pb-24">
-      <PageHeader title="Recibir" />
+      <PageHeader title="Recibir" right={tourBtn} />
 
       <p className="text-neutral-400 text-sm mb-6">Crea un invoice Lightning para recibir sats</p>
 
-      <FormField
-        label="Monto (sats)"
-        type="number"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        placeholder="Ej. 1000"
-        className="mb-4"
-      />
+      <div id="tour-receive-amount">
+        <FormField
+          label="Monto (sats)"
+          type="text"
+          inputMode="numeric"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))}
+          placeholder="Ej. 1000"
+          className="mb-4"
+        />
+      </div>
 
-      <FormField
-        label="Descripción (opcional)"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Ej. Café"
-        className="mb-6"
-      />
+      <div id="tour-receive-description">
+        <FormField
+          label="Descripción (opcional)"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Ej. Café"
+          className="mb-6"
+        />
+      </div>
 
       <button
+        id="tour-receive-generate"
         onClick={handleGenerate}
         disabled={!amount || Number(amount) <= 0}
         className="w-full bg-green-500 text-black font-bold py-3 rounded-xl hover:bg-green-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
