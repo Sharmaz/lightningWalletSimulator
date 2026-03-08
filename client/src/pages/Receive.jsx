@@ -1,15 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { QRCodeSVG } from "qrcode.react";
 
+import Toast from "../components/Toast";
 import useWalletStore from "../store/useWalletStore";
 
 export default function Receive() {
-  const { createInvoice } = useWalletStore();
+  const { createInvoice, invoices } = useWalletStore();
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [invoice, setInvoice] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    if (!invoice) return;
+    const stored = invoices.find((i) => i.id === invoice.id);
+    if (stored?.status === "paid") {
+      setToast(`Pago recibido — ${invoice.amount.toLocaleString()} sats`);
+    }
+  }, [invoices, invoice]);
 
   function handleGenerate() {
     if (!amount || Number(amount) <= 0) return;
@@ -35,6 +45,7 @@ export default function Receive() {
   if (invoice) {
     return (
       <div className="flex flex-col items-center min-h-screen bg-neutral-900 p-6 pb-24">
+        {toast && <Toast message={toast} onDone={() => setToast(null)} />}
         <h2 className="text-white font-bold text-lg mb-1">Invoice generado</h2>
         <p className="text-neutral-400 text-sm mb-6">Muestra este QR para recibir el pago</p>
 
