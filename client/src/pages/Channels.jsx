@@ -29,8 +29,6 @@ export default function Channels() {
   useEffect(() => {
     if (!hasSeenChannels()) {
       setTimeout(() => startChannelsTour(createChannelsTour), 400);
-    } else if (openChannels.length > 0 && !hasSeenLiquidity()) {
-      setTimeout(() => startLiquidityTour(createLiquidityTour), 400);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
