@@ -32,6 +32,15 @@ export function createHomeTour() {
         },
       },
       {
+        element: "#tour-home-help",
+        popover: {
+          title: "? Ayuda",
+          description: "Este botón relanza el tour explicativo en cualquier momento. Todas las pantallas tienen uno — úsalo cuando quieras repasar cómo funciona algo.",
+          side: "bottom",
+          align: "end",
+        },
+      },
+      {
         element: "#tour-home-settings",
         popover: {
           title: "⚙️ Configuración",

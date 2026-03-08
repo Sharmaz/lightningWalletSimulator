@@ -190,8 +190,8 @@ export default function Send() {
       )}
 
       {!scanning && !parsed && (
-        <div className="fixed bottom-0 inset-x-0 bg-black border-t border-neutral-800">
-          <div id="tour-send-actions" className="max-w-md mx-auto flex">
+        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-black border-t border-neutral-800">
+          <div id="tour-send-actions" className="flex">
             <button
               onClick={() => {
                 navigator.clipboard.readText?.().then((text) => {

@@ -24,13 +24,11 @@ export default function Channels() {
   const navigate = useNavigate();
   const openChannels = channels.filter((c) => c.status !== "closed");
   const { hasSeenTour: hasSeenChannels, startTour: startChannelsTour } = useTour("channels");
-  const { hasSeenTour: hasSeenLiquidity, startTour: startLiquidityTour } = useTour("liquidity");
+  const { startTour: startLiquidityTour } = useTour("liquidity");
 
   useEffect(() => {
     if (!hasSeenChannels()) {
       setTimeout(() => startChannelsTour(createChannelsTour), 400);
-    } else if (openChannels.length > 0 && !hasSeenLiquidity()) {
-      setTimeout(() => startLiquidityTour(createLiquidityTour), 400);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

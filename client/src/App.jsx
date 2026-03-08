@@ -16,7 +16,7 @@ import useWalletStore from "./store/useWalletStore";
 function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  if (["/", "/onboarding", "/send", "/p2p"].includes(location.pathname)) return null;
+  if (["/", "/onboarding", "/send", "/p2p", "/channels", "/settings"].includes(location.pathname)) return null;
 
   const active = (path) => location.pathname === path;
 

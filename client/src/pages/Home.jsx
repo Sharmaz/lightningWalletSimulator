@@ -53,6 +53,7 @@ export default function Home() {
         </div>
         <div className="flex gap-2">
           <button
+            id="tour-home-help"
             onClick={() => startTour(createHomeTour)}
             className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-neutral-400 hover:text-white transition-colors font-bold text-sm"
             aria-label="Ver tour explicativo"
