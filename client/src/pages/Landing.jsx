@@ -21,7 +21,7 @@ export default function Landing() {
       <header className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
         <div className="flex items-center gap-2 font-bold text-lg">
           <span>⚡</span>
-          <span>Lightning Sim</span>
+          <span>BilleteraQuest</span>
         </div>
         <button
           onClick={() => navigate("/onboarding")}
@@ -114,7 +114,7 @@ export default function Landing() {
 
       <footer className="max-w-5xl mx-auto px-6 py-10 text-center border-t border-neutral-800 mt-8">
         <p className="text-neutral-600 text-xs">
-          Simulador educativo · Sin bitcoin real · Open source
+          BilleteraQuest · Simulador educativo · Sin bitcoin real · Open source
         </p>
       </footer>
     </div>
